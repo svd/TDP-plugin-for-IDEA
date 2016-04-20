@@ -33,7 +33,9 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
     @Override
     public void decorate(ProjectViewNode node, PresentationData data) {
 
-            VirtualFile nodeVirtualFile = node.getVirtualFile();
+        VirtualFile nodeVirtualFile = node.getVirtualFile();
+
+        if (nodeVirtualFile != null) {
             String fileName = nodeVirtualFile.getName();
             if (!descriptionCache.containsKey(fileName)) {
 
@@ -51,6 +53,8 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
             }
 
             addModuleDescription(data, descriptionCache.get(fileName));
+        }
+
 
     }
 
