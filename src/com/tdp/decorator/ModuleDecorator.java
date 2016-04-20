@@ -4,6 +4,7 @@ import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.projectView.ProjectViewNode;
 import com.intellij.ide.projectView.ProjectViewNodeDecorator;
 import com.intellij.ide.util.treeView.PresentableNodeDescriptor;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packageDependencies.ui.PackageDependenciesNode;
 import com.intellij.ui.ColoredTreeCellRenderer;
@@ -40,19 +41,16 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
                 VirtualFile f = nodeVirtualFile.findChild(PROJECT);
                 if (f != null) {
                     String description = extractDescription(f);
-                    descriptionCache.put(fileName, description);
-
-                    System.out.println(fileName + " * " + description);
+                    if (StringUtil.isNotEmpty(description)) {
+                        descriptionCache.put(fileName, description);
+                        System.out.println(fileName + " * " + description);
+                    }
                 }
 
 
             }
 
             addModuleDescription(data, descriptionCache.get(fileName));
-
-
-
-
 
     }
 
@@ -93,8 +91,6 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
             } else { //decorate node
                 data.setPresentableText(data.getPresentableText() + text);
             }
-
-
         }
 
 
