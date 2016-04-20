@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.tdp.decorator</id>
   <name>TDP module decorator</name>
-  <version>1.1</version>
+  <version>1.2</version>
   <vendor email="mikalia_churakou@epam.com" url="http://www.epam.com">Epam</vendor>
 
   <description><![CDATA[
