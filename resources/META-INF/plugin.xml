@@ -1,9 +1,10 @@
 <idea-plugin version="2">
   <id>com.tdp.decorator</id>
   <name>TDP module decorator</name>
-  <version>1.3</version>
+  <version>1.4</version>
   <vendor email="mikalia_churakou@epam.com" url="http://www.epam.com">Epam</vendor>
 
+  <change-notes>font color fix for dracula thema</change-notes>
   <description><![CDATA[
      Display module decription from corresponding .project file
     ]]></description>

@@ -89,7 +89,9 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
 
             /*decorate module*/
             if (coloredFragmentList.size() > 0){
-                SimpleTextAttributes attr = new SimpleTextAttributes(Font.PLAIN, Color.black);
+                PresentableNodeDescriptor.ColoredFragment nodeFragment = coloredFragmentList.get(0);
+                /* copy text settings from first text attribute*/
+                SimpleTextAttributes attr = nodeFragment.getAttributes();
                 PresentableNodeDescriptor.ColoredFragment fragment = new PresentableNodeDescriptor.ColoredFragment(text, attr);
                 coloredFragmentList.add(fragment);
             } else { //decorate node
