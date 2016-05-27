@@ -1,19 +1,27 @@
 <idea-plugin version="2">
-  <id>com.tdp.decorator</id>
-  <name>TDP module decorator</name>
-  <version>1.1</version>
-  <vendor email="mikalia_churakou@epam.com" url="http://www.epam.com">Epam</vendor>
+  <id>com.tdp.workspace.generator</id>
+  <name>TDP workspace generator</name>
+  <version>1.5</version>
+  <vendor email="Siarhei_Nahel@epam.com" url="http://www.epam.com">Epam</vendor>
 
   <description><![CDATA[
-     Display module decription from corresponding .project file
+      The plugin generates a workspace for a TDP project.
     ]]></description>
 
-  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+  <change-notes><![CDATA[
+    ]]>
+  </change-notes>
+
   <idea-version since-build="141.0"/>
 
   <extensions defaultExtensionNs="com.intellij">
-        <projectViewNodeDecorator implementation="com.tdp.decorator.ModuleDecorator"/>
-    <!-- Add your extensions here -->
+
   </extensions>
+
+  <actions>
+    <action id="BuildTpdProject" class="com.tdp.workspace.generator.ChooserBaseModules" text="TDP project">
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </action>
+  </actions>
 
 </idea-plugin>
