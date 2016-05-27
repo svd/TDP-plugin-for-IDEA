@@ -1,5 +1,6 @@
 package com.tdp.workspace.generator;
 
+import com.intellij.openapi.roots.impl.CompilerModuleExtensionImpl;
 import com.tdp.workspace.generator.utils.GeneratorModuleDep;
 import com.tdp.workspace.generator.utils.GeneratorSourceContent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -101,7 +102,9 @@ public class Controller {
                         public void consume(ModifiableRootModel model) {
                             CompilerModuleExtension extension = model.getModuleExtension(CompilerModuleExtension.class);
                             ContentEntry rootContentEntry = model.addContentEntry(VfsUtilCore.pathToUrl(rootContent));
+                            extension.inheritCompilerOutputPath(false);
                             extension.setCompilerOutputPath(VfsUtilCore.pathToUrl(output));
+                            extension.setCompilerOutputPathForTests(VfsUtilCore.pathToUrl(output));
                             extension.setExcludeOutput(true);
                             try {
                                 GeneratorSourceContent.generateRes(path, rootContentEntry, rootContent);
