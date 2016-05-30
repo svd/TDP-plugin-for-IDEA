@@ -1,108 +1,131 @@
- package com.tdp.decorator;
+package com.tdp.decorator;
 
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.projectView.ProjectViewNode;
 import com.intellij.ide.projectView.ProjectViewNodeDecorator;
 import com.intellij.ide.util.treeView.PresentableNodeDescriptor;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packageDependencies.ui.PackageDependenciesNode;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.awt.*;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
 
- /**
- * Created by Mikalai_Churakou on 4/19/2016.
- */
+
 public class ModuleDecorator implements ProjectViewNodeDecorator {
 
+    private Properties descriptionCache = new Properties();
+    private String pathToProperties = (System.getenv("USERPROFILE")+"/description.properties");
+    private String tempRepositoryFile = System.getenv("TEMP") + "/Repository.txt";
+    private final static String URL_TO_CVS = "http://10.160.254.238/cvs/";
+    private final static long TWO_DAY_DURATION = 172800000;
 
-    private static final String PROJECT = ".project";
-    public static final String COMMENT = "comment";
-
-    private Map<String,String> descriptionCache = new HashMap<String,String>();
-    private DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
     @Override
     public void decorate(ProjectViewNode node, PresentationData data) {
 
+        if (descriptionCache.size() == 0) {
+            try {
+                init();
+            } catch (IOException | ParserConfigurationException | SAXException e) {
+                e.printStackTrace();
+            }
+        }
         VirtualFile nodeVirtualFile = node.getVirtualFile();
-
         if (nodeVirtualFile != null) {
             String fileName = nodeVirtualFile.getName();
-            if (!descriptionCache.containsKey(fileName)) {
-
-
-                VirtualFile f = nodeVirtualFile.findChild(PROJECT);
-                if (f != null) {
-                    String description = extractDescription(f);
-                    if (StringUtil.isNotEmpty(description)) {
-                        descriptionCache.put(fileName, description);
-                        System.out.println(fileName + " * " + description);
+            if (!descriptionCache.containsKey(fileName) && nodeVirtualFile.isDirectory() && fileName.contains("000")) {
+                File propFile = new File(pathToProperties);
+                long now = new Date().getTime();
+                long lastMod = propFile.lastModified();
+                if (now - lastMod > TWO_DAY_DURATION){
+                    try {
+                        update();
+                    } catch (IOException | ParserConfigurationException | SAXException e) {
+                        e.printStackTrace();
                     }
                 }
-
-
             }
-
-            addModuleDescription(data, descriptionCache.get(fileName));
+            addModuleDescription(data, descriptionCache.getProperty(fileName));
         }
 
 
     }
 
-    private String extractDescription(VirtualFile f) {
-
-        String description = null;
-        try {
-            // use the factory to create a documentbuilder
-            DocumentBuilder builder = factory.newDocumentBuilder();
-
-            // create a new document from input stream
-            Document doc = builder.parse(f.getInputStream());
-
-            NodeList nodeList = doc.getElementsByTagName(COMMENT);
-
-            if (nodeList != null && nodeList.getLength() > 0){
-                description = nodeList.item(0).getTextContent();
-
-            }
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        return description;
-    }
 
     private void addModuleDescription(PresentationData data, String description) {
         if (description != null){
             String text = " [" + description + "]";
             List<PresentableNodeDescriptor.ColoredFragment> coloredFragmentList = data.getColoredText();
-
             /*decorate module*/
             if (coloredFragmentList.size() > 0){
                 PresentableNodeDescriptor.ColoredFragment nodeFragment = coloredFragmentList.get(0);
                 /* copy text settings from first text attribute*/
                 SimpleTextAttributes attr = nodeFragment.getAttributes();
-                PresentableNodeDescriptor.ColoredFragment fragment = new PresentableNodeDescriptor.ColoredFragment(text, attr);
-                coloredFragmentList.add(fragment);
+                SimpleTextAttributes attrF = new SimpleTextAttributes(attr.getBgColor(), attr.getFgColor(), attr.getWaveColor(), 0);
+                PresentableNodeDescriptor.ColoredFragment fragment = new PresentableNodeDescriptor.ColoredFragment(text, attrF);
+                if (coloredFragmentList.size() > 1){
+                    coloredFragmentList.add(1, fragment);
+                } else {
+                    coloredFragmentList.add(fragment);
+                }
             } else { //decorate node
                 data.setPresentableText(data.getPresentableText() + text);
             }
         }
-
-
     }
 
     @Override
     public void decorate(PackageDependenciesNode node, ColoredTreeCellRenderer cellRenderer) {
+    }
+
+    private void init() throws IOException, ParserConfigurationException, SAXException {
+        File prFile = new File(pathToProperties);
+        if (!prFile.exists()){
+            prFile.createNewFile();
+            update();
+        } else {
+            FileInputStream ins = new FileInputStream(prFile);
+            descriptionCache.load(ins);
+        }
+    }
+
+    private void update() throws IOException, ParserConfigurationException, SAXException {
+        parseHtml();
+        FileOutputStream fos = null;
+        try{
+            fos = new FileOutputStream(new File(pathToProperties));
+            descriptionCache.store(fos, null);
+            fos.flush();
+        } finally {
+            if(fos != null){
+                fos.close();
+            }
+        }
+    }
+
+    private void parseHtml() throws IOException, ParserConfigurationException, SAXException {
+        URL url = new URL(URL_TO_CVS);
+        OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(tempRepositoryFile), "utf-8");
+        InputStream in = url.openStream();
+        int i;
+        while((i=in.read())!=-1){
+            out.write(i);
+        }
+        in.close();
+        out.flush();
+        out.close();
+        Map<String, String> cache = Parser.descrFromHtml(new File(tempRepositoryFile));
+        descriptionCache.putAll(cache);
     }
 }
