@@ -1,6 +1,5 @@
 package com.tdp.workspace.generator;
 
-import com.intellij.openapi.roots.impl.CompilerModuleExtensionImpl;
 import com.tdp.workspace.generator.utils.GeneratorModuleDep;
 import com.tdp.workspace.generator.utils.GeneratorSourceContent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -67,7 +66,6 @@ public class Controller {
                             libs.put(library.getName(), new VirtFilesLibrary(library.getFiles(OrderRootType.CLASSES),
                                     library.getFiles(OrderRootType.SOURCES)));
                             libraryTable.removeLibrary(library);
-                            System.out.println(library.getName());
                         }
                     });
                 }

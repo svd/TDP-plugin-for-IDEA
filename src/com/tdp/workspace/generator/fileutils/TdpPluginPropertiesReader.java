@@ -75,7 +75,7 @@ public class TdpPluginPropertiesReader {
             if (line == null){
                 return result;
             }
-            String[] dirs = line.split(";");
+            String[] dirs = line.split(Constants.SEMICOLON);
             for (String dir : dirs) {
                 result.add(dir.trim());
             }

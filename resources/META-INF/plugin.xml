@@ -1,8 +1,8 @@
 <idea-plugin version="2">
-  <id>com.tdp.workspace.generator</id>
-  <name>TDP workspace generator</name>
+  <id>com.tdp</id>
+  <name>TDP plugin</name>
   <version>1.5</version>
-  <vendor email="Siarhei_Nahel@epam.com" url="http://www.epam.com">Epam</vendor>
+  <vendor url="http://www.epam.com">Epam</vendor>
 
   <description><![CDATA[
       The plugin generates a workspace for a TDP project.

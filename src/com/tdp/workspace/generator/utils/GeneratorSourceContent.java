@@ -39,7 +39,7 @@ public class GeneratorSourceContent {
                 continue;
             }
             if (isExistDir(pathToModule, dir)) {
-               rootContentEntry.addSourceFolder(VfsUtilCore.pathToUrl(pathToModule + dir), true);
+                rootContentEntry.addSourceFolder(VfsUtilCore.pathToUrl(pathToModule + dir), true);
             }
         }
 
@@ -48,7 +48,7 @@ public class GeneratorSourceContent {
                 continue;
             }
             if (isExistDir(pathToModule, dir)) {
-               rootContentEntry.addSourceFolder(VfsUtilCore.pathToUrl(pathToModule + dir), JavaResourceRootType.TEST_RESOURCE);
+                rootContentEntry.addSourceFolder(VfsUtilCore.pathToUrl(pathToModule + dir), JavaResourceRootType.TEST_RESOURCE);
             }
         }
 

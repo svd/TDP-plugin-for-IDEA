@@ -39,7 +39,7 @@ public class ChooserBaseModules extends AnAction {
                         if (modules.length == count){
                             return true;
                         }
-                       return false;
+                        return false;
                     }
 
                     @Override
@@ -56,13 +56,7 @@ public class ChooserBaseModules extends AnAction {
             Controller controller = new Controller(baseModulesList, project.getBasePath());
             try {
                 controller.generateWorkspace(project);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            } catch (TransformerException e1) {
-                e1.printStackTrace();
-            } catch (ParserConfigurationException e1) {
-                e1.printStackTrace();
-            } catch (SAXException e1) {
+            } catch (IOException | TransformerException| ParserConfigurationException | SAXException e1) {
                 e1.printStackTrace();
             }
         }
