@@ -11,6 +11,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
@@ -43,7 +44,7 @@ public class Parser {
                     line = scanner.nextLine().trim();
                 }
                 fragment.append(clearLink(line));
-                Entry entry = getModuleDescr(fragment.toString());
+                Map.Entry<String, String> entry = getModuleDescr(fragment.toString());
                 cache.put(entry.getKey(), entry.getValue());
             }
         }
@@ -63,11 +64,11 @@ public class Parser {
         return resultLine;
     }
 
-    private static Entry getModuleDescr(String tableLine) throws ParserConfigurationException, IOException, SAXException {
-        Entry entry = new Entry();
+    private static Map.Entry<String, String> getModuleDescr(String tableLine) throws ParserConfigurationException, IOException, SAXException {
         Document d = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(tableLine)));
-
         NodeList nList = d.getElementsByTagName(TD_TAG);
+        String key = null;
+        String value = null;
         for (int i = 0; i < nList.getLength(); i++) {
             Node nNode = nList.item(i);
             if (nNode.getNodeType() == Node.ELEMENT_NODE){
@@ -77,38 +78,14 @@ public class Parser {
                     Node numberNode = element.getElementsByTagName(A_TAG).item(0);
                     if (numberNode.getNodeType() == Node.ELEMENT_NODE){
                         Element num = (Element) numberNode;
-                        entry.setKey(num.getFirstChild().getTextContent().trim());
+                        key = num.getFirstChild().getTextContent().trim();
                     }
                 }
                 if (atr.equals(PROJECT_DESCRIPTION_ATR_NAME)){
-                    entry.setValue(element.getFirstChild().getTextContent().trim());
+                    value = element.getFirstChild().getTextContent().trim();
                 }
             }
         }
-        return entry;
-    }
-
-    private static class Entry{
-        private String key;
-        private String value;
-
-        public Entry() {
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public void setKey(String key) {
-            this.key = key;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
+        return new AbstractMap.SimpleEntry<String, String>(key, value);
     }
 }

@@ -1,12 +1,12 @@
 <idea-plugin version="2">
-  <id>com.tdp.decorator</id>
-  <name>TDP module decorator</name>
-  <version>1.4</version>
-  <vendor email="mikalia_churakou@epam.com" url="http://www.epam.com">Epam</vendor>
+  <id>com.tdp</id>
+  <name>TDP plugin</name>
+  <version>1.5</version>
+  <vendor url="http://www.epam.com">Epam</vendor>
 
-  <change-notes>font color fix for dracula thema</change-notes>
+  <change-notes></change-notes>
   <description><![CDATA[
-     Display module decription from corresponding .project file
+     Display module decription from csv portal
     ]]></description>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
