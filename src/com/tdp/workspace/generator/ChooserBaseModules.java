@@ -6,11 +6,13 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.InputValidator;
 import com.intellij.openapi.ui.Messages;
+import com.tdp.workspace.generator.utils.InputModulesValidator;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 
@@ -21,25 +23,13 @@ public class ChooserBaseModules extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
         Project project = e.getProject();
-        NavigableSet<String> allModules = ReadFileUtil.getAllTDPModulesFromProjectDir(project.getBasePath());
+        InputModulesValidator validator = new InputModulesValidator(
+                ReadFileUtil.getAllTDPModulesFromProjectDir(project.getBasePath()));
         String baseModules = Messages.showInputDialog(project, "Base modules (for example: 00005555;00005556)",
                 "Choose base modules", null, null, new InputValidator() {
                     @Override
                     public boolean checkInput(String s) {
-                        String[] modules = s.split(Constants.SEMICOLON);
-                        if (modules.length == 0){
-                            return false;
-                        }
-                        int count = 0;
-                        for (String module : modules){
-                            if (allModules.contains(module)){
-                                count++;
-                            }
-                        }
-                        if (modules.length == count){
-                            return true;
-                        }
-                        return false;
+                        return validator.validate(s);
                     }
 
                     @Override
@@ -50,9 +40,7 @@ public class ChooserBaseModules extends AnAction {
         if (baseModules != null){
             NavigableSet<String> baseModulesList = new TreeSet<>();
             String[] modules = baseModules.split(Constants.SEMICOLON);
-            for (String module : modules){
-                baseModulesList.add(module);
-            }
+            baseModulesList.addAll(Arrays.asList(modules));
             Controller controller = new Controller(baseModulesList, project.getBasePath());
             try {
                 controller.generateWorkspace(project);

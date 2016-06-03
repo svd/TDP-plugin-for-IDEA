@@ -1,22 +1,35 @@
 <idea-plugin version="2">
   <id>com.tdp</id>
   <name>TDP plugin</name>
-  <version>1.5</version>
+  <version>1.6</version>
   <vendor url="http://www.epam.com">Epam</vendor>
 
   <change-notes></change-notes>
   <description><![CDATA[
-      The plugin for a TDP project.
+      The <b>TDP Project Development</b> plugin is intended for creation a new workspace
+      for back-end development of Datalex TDP.<br>
+      <br>
+      <b>Authors:</b>
+      <ul>
+        <li>Mikalai Churakou</li>
+        <li>Siarhei Nahel</li>
+        <li>Pavel Semenov</li>
+      </ul>
     ]]></description>
 
   <change-notes><![CDATA[
+      <b>1.6</b><br>
+      <ul>
+        <li>Add template factory for project/module creation wizard</li>
+      </ul>
     ]]>
   </change-notes>
 
-  <idea-version since-build="141.0"/>
+  <idea-version since-build="143.0"/>
 
   <extensions defaultExtensionNs="com.intellij">
-	<projectViewNodeDecorator implementation="com.tdp.decorator.ModuleDecorator"/>
+    <projectViewNodeDecorator implementation="com.tdp.decorator.ModuleDecorator"/>
+    <projectTemplatesFactory implementation="com.tdp.workspace.generator.project.TDPTemplateFactory"/>
   </extensions>
 
   <actions>
