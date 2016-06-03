@@ -13,10 +13,11 @@
     ]]>
   </change-notes>
 
-  <idea-version since-build="141.0"/>
+  <idea-version since-build="143.0"/>
 
   <extensions defaultExtensionNs="com.intellij">
 	<projectViewNodeDecorator implementation="com.tdp.decorator.ModuleDecorator"/>
+    <projectTemplatesFactory implementation="com.tdp.workspace.generator.project.TDPTemplateFactory"/>
   </extensions>
 
   <actions>
