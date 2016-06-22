@@ -44,31 +44,36 @@ public class TdpPluginPropertiesReader {
                 "generatedSourceDir=/xsd_gen\n" +
                 "testSourceDirs=/src/test/java\n" +
                 "testResourcesDirs=/src/test/resources\n" +
-                "resourcesDirs=");
+                "resourcesDirs=\n" +
+                "baseModules=");
         fileWriter.close();
     }
 
     public NavigableSet<String> getSourceDirs(){
-        return getDirs("sourceDirs");
+        return getValues("sourceDirs");
     }
 
     public NavigableSet<String> getGeneratedDirs(){
-        return getDirs("generatedSourceDir");
+        return getValues("generatedSourceDir");
     }
 
     public NavigableSet<String> getTestSourceDirs(){
-        return getDirs("testSourceDirs");
+        return getValues("testSourceDirs");
     }
 
     public NavigableSet<String> getResourcesDirs() {
-        return getDirs("resourcesDirs");
+        return getValues("resourcesDirs");
     }
 
     public NavigableSet<String> getTestResourcesDirs(){
-        return getDirs("testResourcesDirs");
+        return getValues("testResourcesDirs");
     }
 
-    private NavigableSet<String> getDirs(String key){
+    public String getBaseModules() {
+        return properties.getProperty("baseModules");
+    }
+
+    private NavigableSet<String> getValues(String key){
         NavigableSet<String> result = new TreeSet<>();
         if (properties.containsKey(key)){
             String line = properties.getProperty(key);
@@ -81,5 +86,14 @@ public class TdpPluginPropertiesReader {
             }
         }
         return result;
+    }
+
+    public void setProperty(String key, String value) throws IOException {
+        properties.setProperty(key, value);
+        File prop = new File(pathToProperties);
+        FileWriter fileWriter = new FileWriter(prop, false);
+        properties.store(fileWriter, null);
+        fileWriter.flush();
+        fileWriter.close();
     }
 }

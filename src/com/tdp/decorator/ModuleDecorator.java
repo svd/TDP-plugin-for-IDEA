@@ -8,6 +8,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packageDependencies.ui.PackageDependenciesNode;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
+import com.tdp.workspace.generator.Constants;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -25,7 +26,6 @@ import java.util.List;
 public class ModuleDecorator implements ProjectViewNodeDecorator {
 
     private Properties descriptionCache = new Properties();
-    private String pathToProperties = (System.getenv("USERPROFILE")+"/description.properties");
     private String tempRepositoryFile = System.getenv("TEMP") + "/Repository.txt";
     private final static String URL_TO_CVS = "http://10.160.254.238/cvs/";
     private final static long TWO_DAY_DURATION = 172800000;
@@ -45,7 +45,7 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
         if (nodeVirtualFile != null) {
             String fileName = nodeVirtualFile.getName();
             if (!descriptionCache.containsKey(fileName) && nodeVirtualFile.isDirectory() && fileName.contains("000")) {
-                File propFile = new File(pathToProperties);
+                File propFile = new File(Constants.PATH_TO_DESCRIPTIONS);
                 long now = new Date().getTime();
                 long lastMod = propFile.lastModified();
                 if (now - lastMod > TWO_DAY_DURATION){
@@ -90,7 +90,7 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
     }
 
     private void init() throws IOException, ParserConfigurationException, SAXException {
-        File prFile = new File(pathToProperties);
+        File prFile = new File(Constants.PATH_TO_DESCRIPTIONS);
         if (!prFile.exists()){
             prFile.createNewFile();
             update();
@@ -104,7 +104,7 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
         parseHtml();
         FileOutputStream fos = null;
         try{
-            fos = new FileOutputStream(new File(pathToProperties));
+            fos = new FileOutputStream(new File(Constants.PATH_TO_DESCRIPTIONS));
             descriptionCache.store(fos, null);
             fos.flush();
         } finally {
