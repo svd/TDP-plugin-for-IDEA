@@ -4,6 +4,8 @@ import com.tdp.workspace.generator.Constants;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NavigableSet;
 import java.util.Scanner;
 import java.util.TreeSet;
@@ -12,6 +14,9 @@ import java.util.TreeSet;
  * Created by Siarhei Nahel on 21.05.2016.
  */
 public class ReadFileUtil {
+
+    private static List<String> jars = new ArrayList<>();
+
     public static NavigableSet<String> getAllTDPModulesFromProjectDir(String path){
         File projectDir = new File(path);
         NavigableSet<String> allModules = new TreeSet<>();
@@ -37,5 +42,26 @@ public class ReadFileUtil {
         }
         scanner.close();
         return modules;
+    }
+
+    public static List<String> getJars(String path){
+        File file = new File(path + "/projectoutput");
+        if (file.exists() && file.isDirectory()) {
+            generateJars(file);
+        }
+        return jars;
+    }
+
+    private static void generateJars(File dir) {
+        File[] files = dir.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                generateJars(file);
+            } else {
+                if (file.getName().endsWith(".jar")) {
+                    jars.add(file.getAbsolutePath());
+                }
+            }
+        }
     }
 }

@@ -13,5 +13,5 @@ public class Constants {
     public static final String PATTERN_PATH_TO_MODULE_FILE = "{0}/{1}/{1}.iml";
     public static final String CLASSES_DIR = "/classes";
     public static final String SEMICOLON = ";";
-
+    public static final String PATH_TO_DESCRIPTIONS = (System.getenv("USERPROFILE")+"/description.properties");
 }
