@@ -1,9 +1,13 @@
 package com.tdp.decorator;
 
 import com.intellij.ide.projectView.PresentationData;
+import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.projectView.ProjectViewNode;
 import com.intellij.ide.projectView.ProjectViewNodeDecorator;
+import com.intellij.ide.projectView.impl.AbstractProjectViewPane;
 import com.intellij.ide.util.treeView.PresentableNodeDescriptor;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.packageDependencies.ui.PackageDependenciesNode;
 import com.intellij.ui.ColoredTreeCellRenderer;
@@ -30,6 +34,21 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
     private final static String URL_TO_CVS = "http://10.160.254.238/cvs/";
     private final static long TWO_DAY_DURATION = 172800000;
 
+    public ModuleDecorator() {
+        super();
+        // Remove the old project view pane
+        for (Project project : ProjectManager.getInstance().getOpenProjects()) {
+            ProjectView projectView = ProjectView.getInstance(project);
+            AbstractProjectViewPane pane = projectView.getProjectViewPaneById("ProjectPane");
+            if (pane != null) {
+                if (pane.getWeight() == 0) { // "0" is a weight of the default pane
+                    projectView.removeProjectPane(pane);
+                    // Switch view to the new pane
+                    projectView.changeView("TDPProjectPane");
+                }
+            }
+        }
+    }
 
     @Override
     public void decorate(ProjectViewNode node, PresentationData data) {
