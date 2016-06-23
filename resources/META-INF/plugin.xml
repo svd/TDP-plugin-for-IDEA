@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.tdp</id>
   <name>TDP plugin</name>
-  <version>1.6</version>
+  <version>1.8</version>
   <vendor url="http://www.epam.com">Epam</vendor>
 
   <change-notes></change-notes>
@@ -18,9 +18,12 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      <b>1.6</b><br>
+      <b>1.8</b><br>
       <ul>
-        <li>Add template factory for project/module creation wizard</li>
+        <li>Added a separate menu</li>
+        <li>Added a module description in the Generator</li>
+        <li>Added a libraries generator</li>
+        <li>Added a renaming of the project by a name of the first base module</li>
       </ul>
     ]]>
   </change-notes>
@@ -33,9 +36,12 @@
   </extensions>
 
   <actions>
-    <action id="BuildTpdProject" class="com.tdp.workspace.generator.ChooserBaseModules" text="TDP project">
-      <add-to-group group-id="ToolsMenu" anchor="last"/>
-    </action>
+    <group id="TDPplugin.TDPMenu" text="TD_P Project" description="TDP Project menu">
+      <add-to-group group-id="MainMenu" anchor="last"  />
+      <action id="BuildTpdProject" class="com.tdp.workspace.generator.ChooserBaseModules" text="Generate workspace"/>
+      <action id="TDPUpdateLibrary" class="com.tdp.workspace.generator.UpdateTDPLibraryAction" text="Update libraries"
+              description="Copy jars files into a project library and update project"/>
+    </group>
   </actions>
 
 </idea-plugin>
