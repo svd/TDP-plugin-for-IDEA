@@ -22,9 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
-import java.util.*;
+import java.util.Properties;
 import java.util.List;
-
+import java.util.Map;
+import java.util.Date;
 
 public class ModuleDecorator implements ProjectViewNodeDecorator {
 
