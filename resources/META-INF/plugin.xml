@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.tdp</id>
   <name>TDP plugin</name>
-  <version>1.8</version>
+  <version>1.9</version>
   <vendor url="http://www.epam.com">Epam</vendor>
 
   <change-notes></change-notes>
@@ -18,12 +18,9 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      <b>1.8</b><br>
+      <b>1.9</b><br>
       <ul>
-        <li>Added a separate menu</li>
-        <li>Added a module description in the Generator</li>
-        <li>Added a libraries generator</li>
-        <li>Added a renaming of the project by a name of the first base module</li>
+        <li>Added ability of searching in modules descriptions to "speed search" in project view pane</li>
       </ul>
     ]]>
   </change-notes>
@@ -33,6 +30,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <projectViewNodeDecorator implementation="com.tdp.decorator.ModuleDecorator"/>
     <projectTemplatesFactory implementation="com.tdp.workspace.generator.project.TDPTemplateFactory"/>
+    <projectViewPane implementation="com.tdp.decorator.TDPProjectViewPane"/>
   </extensions>
 
   <actions>
