@@ -164,9 +164,14 @@ public class TDPProjectViewPane extends ProjectViewPane {
                 PsiDirectoryNode psiDirectoryNode = (PsiDirectoryNode) node.getUserObject();
                 List<PresentableNodeDescriptor.ColoredFragment> fragments =
                         psiDirectoryNode.getPresentation().getColoredText();
-                StringBuilder result = new StringBuilder();
-                for (int i = 0; i < fragments.size() - 1 /* exclude module path */; i++) {
-                    result.append(fragments.get(i).getText());
+                StringBuilder result = new StringBuilder(node.toString());
+                for (int i = 1 /* first (0) fragment is already added */; i < fragments.size(); i++) {
+                    String fragmentText = fragments.get(i).getText();
+                    result.append(fragmentText);
+                    // Handles only module's name and its description. Skips other elements.
+                    if (fragmentText.startsWith(ModuleDecorator.START_FRAMING)) {
+                        break;
+                    }
                 }
                 return result.toString();
             }

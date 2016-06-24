@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.Date;
 
 public class ModuleDecorator implements ProjectViewNodeDecorator {
+    // For using only in the package
+    static String START_FRAMING = " [";
+    static String END_FRAMING = "]";
 
     private Properties descriptionCache = new Properties();
     private String tempRepositoryFile = System.getenv("TEMP") + "/Repository.txt";
@@ -85,7 +88,7 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
 
     private void addModuleDescription(PresentationData data, String description) {
         if (description != null){
-            String text = " [" + description + "]";
+            String text = START_FRAMING + description + END_FRAMING;
             List<PresentableNodeDescriptor.ColoredFragment> coloredFragmentList = data.getColoredText();
             /*decorate module*/
             if (coloredFragmentList.size() > 0){
