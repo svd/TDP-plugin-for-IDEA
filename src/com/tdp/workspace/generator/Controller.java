@@ -14,14 +14,10 @@ import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
-import com.intellij.openapi.roots.ui.configuration.projectRoot.LibrariesContainer;
-import com.intellij.openapi.roots.ui.configuration.projectRoot.LibrariesContainerFactory;
 import com.intellij.openapi.vfs.VfsUtilCore;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import org.xml.sax.SAXException;
 
@@ -31,11 +27,8 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.NavigableSet;
-import java.util.TreeSet;
 
 /**
  * Created by Siarhei Nahel on 21.05.2016.
@@ -52,19 +45,14 @@ public class Controller {
     }
 
     public void generateWorkspace(Project project) throws IOException, TransformerException, ParserConfigurationException, SAXException {
-        NavigableSet<String> nameLibraries = new TreeSet<>();
-        Map<String, VirtFilesLibrary> libs = new HashMap<>();
         ModuleManager manager = ModuleManagerImpl.getInstance(project);
         LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
         Library[] libraries = libraryTable.getLibraries();
         for (Library library : libraries) {
-            nameLibraries.add(library.getName());
             CommandProcessor.getInstance().executeCommand(project, new Runnable() {
                 public void run() {
                     ApplicationManager.getApplication().runWriteAction(new Runnable() {
                         public void run() {
-                            libs.put(library.getName(), new VirtFilesLibrary(library.getFiles(OrderRootType.CLASSES),
-                                    library.getFiles(OrderRootType.SOURCES)));
                             libraryTable.removeLibrary(library);
                         }
                     });
@@ -118,41 +106,11 @@ public class Controller {
                                 } catch (ClassCastException e){
                                 }
                             }
-                            for (String libraryName : nameLibraries) {
-                                if (!existLibrary.contains(libraryName)) {
-                                    model.addInvalidLibrary(libraryName, "project");
-                                }
-                            }
                         }
                     });
                 }
             });
         }
-
-        LibrariesContainer container = LibrariesContainerFactory.createContainer(project);
-        for (Map.Entry<String, VirtFilesLibrary> library : libs.entrySet()){
-            CommandProcessor.getInstance().executeCommand(project, new Runnable() {
-                public void run() {
-                    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                        public void run() {
-                            container.createLibrary(library.getKey(),
-                                    LibrariesContainer.LibraryLevel.PROJECT,
-                                    library.getValue().classRoots,
-                                    library.getValue().sourceRoots);
-                        }
-                    });
-                }
-            }, null, null);
-        }
-    }
-
-    private class VirtFilesLibrary{
-        VirtualFile[] classRoots;
-        VirtualFile[] sourceRoots;
-
-        public VirtFilesLibrary(VirtualFile[] classRoots, VirtualFile[] sourceRoots) {
-            this.classRoots = classRoots;
-            this.sourceRoots = sourceRoots;
-        }
+        UpdateTDPLibraryAction.generateLibs(project);
     }
 }
