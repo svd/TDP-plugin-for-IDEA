@@ -1,6 +1,5 @@
 package com.tdp.workspace.generator;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.impl.ProjectImpl;
 import com.tdp.workspace.generator.fileutils.ReadFileUtil;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -36,7 +35,7 @@ public class ChooserBaseModules extends AnAction {
             FileInputStream ins = new FileInputStream(prFile);
             descriptions.load(ins);
         } catch (IOException ex) {
-
+            ex.printStackTrace();
         }
         Project project = e.getProject();
         String path = project.getBasePath();
@@ -56,6 +55,7 @@ public class ChooserBaseModules extends AnAction {
                 message.append(" \n");
             }
         } catch (IOException e1) {
+            e1.printStackTrace();
         }
 
         String baseModules = Messages.showInputDialog(project, message.toString(),
