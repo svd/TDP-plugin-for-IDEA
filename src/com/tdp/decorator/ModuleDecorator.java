@@ -46,9 +46,8 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
             AbstractProjectViewPane pane = projectView.getProjectViewPaneById("ProjectPane");
             if (pane != null) {
                 if (pane.getWeight() == 0) { // "0" is a weight of the default pane
+                    projectView.changeView("TDPProjectPane"); // It is need before removing old pane
                     projectView.removeProjectPane(pane);
-                    // Switch view to the new pane
-                    projectView.changeView("TDPProjectPane");
                 }
             }
         }

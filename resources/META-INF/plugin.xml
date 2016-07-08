@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.tdp</id>
   <name>TDP plugin</name>
-  <version>1.10</version>
+  <version>1.10.1</version>
   <vendor url="http://www.epam.com">Epam</vendor>
 
   <description><![CDATA[
@@ -17,14 +17,14 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      <b>1.10.1</b><br>
+      <ul>
+        <li>Fixed "Cyclic dependency" in the decorator module</li>
+      </ul>
       <b>1.10</b><br>
       <ul>
         <li>Run update library automatically after the generate workspace</li>
         <li>Added source paths in the TDPLibrary</li>
-      </ul>
-      <b>1.9.1</b><br>
-      <ul>
-        <li>Added support of "speed search" for IDEA 2016.x</li>
       </ul>
     ]]>
   </change-notes>
