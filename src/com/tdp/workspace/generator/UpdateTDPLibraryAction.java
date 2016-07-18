@@ -73,31 +73,22 @@ public class UpdateTDPLibraryAction extends AnAction {
                     ModuleRootModificationUtil.updateModel(module, new Consumer<ModifiableRootModel>() {
                         @Override
                         public void consume(ModifiableRootModel model) {
-                            List<String> existLibrary = new ArrayList<String>();
                             OrderEntry[] orderEntries = model.getOrderEntries();
-                            boolean hasTdpLib = false;
                             for (OrderEntry entry : orderEntries) {
                                 if (entry instanceof LibraryOrderEntry) {
                                     LibraryOrderEntry orderEntry = (LibraryOrderEntry) entry;
-                                    if (orderEntry.getLibraryName().equals(LIBRARY_NAME)) {
-                                        hasTdpLib = true;
-                                    } else {
+                                    if (orderEntry != null) {
                                         model.removeOrderEntry(orderEntry);
                                     }
                                 }
                             }
-                            if (!hasTdpLib) {
-                                model.addInvalidLibrary(LIBRARY_NAME, "project");
-                            }
+                            model.addInvalidLibrary(LIBRARY_NAME, "project");
                         }
                     });
                 }
             });
         }
         List<String> jars = ReadFileUtil.getJars(project.getBasePath());
-        if (jars.isEmpty()) {
-            return;
-        }
         VirtualFile[] classes = getClasses(jars, project);
         VirtualFile[] sources = getSourcesFromRepository(jars, project);
         LibrariesContainer container = LibrariesContainerFactory.createContainer(project);
