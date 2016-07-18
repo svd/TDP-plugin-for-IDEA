@@ -20,10 +20,7 @@ import javax.swing.*;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.NavigableSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * TDPProjectBuilder
@@ -53,7 +50,7 @@ public class TDPProjectBuilder extends ModuleBuilder {
     @Nullable
     @Override
     public List<Module> commit(@NotNull Project project, ModifiableModuleModel model, ModulesProvider modulesProvider) {
-        NavigableSet<String> baseModulesList = new TreeSet<>();
+        List<String> baseModulesList = new ArrayList<>();
         baseModulesList.addAll(Arrays.asList(modules));
         Controller controller = new Controller(baseModulesList, project.getBasePath());
         try {

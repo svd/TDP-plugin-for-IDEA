@@ -1,5 +1,8 @@
 package com.tdp.workspace.generator;
 
+import com.intellij.openapi.project.impl.ProjectImpl;
+import com.tdp.decorator.DescriptionsCache;
+import com.tdp.workspace.generator.fileutils.TdpPluginPropertiesReader;
 import com.tdp.workspace.generator.utils.GeneratorModuleDep;
 import com.tdp.workspace.generator.utils.GeneratorSourceContent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -36,16 +39,22 @@ import java.util.NavigableSet;
 public class Controller {
     private static final String JAVA_MODULE = "JAVA_MODULE";
     private String path;
-    private NavigableSet<String> baseModules;
+    private List<String> baseModules;
     private NavigableSet<String> allDepend;
 
-    public Controller(NavigableSet<String> baseModules, String path) {
+    public Controller(List<String> baseModules, String path) {
         this.baseModules = baseModules;
         this.path = path;
     }
 
     public void generateWorkspace(Project project) throws IOException, TransformerException, ParserConfigurationException, SAXException {
         ModuleManager manager = ModuleManagerImpl.getInstance(project);
+        DescriptionsCache cache = DescriptionsCache.getInstance();
+        String newNameProject = cache.getDescription(baseModules.get(0));
+        if (newNameProject != null) {
+            ProjectImpl projectImpl = (ProjectImpl) project;
+            projectImpl.setProjectName(newNameProject);
+        }
         LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
         Library[] libraries = libraryTable.getLibraries();
         for (Library library : libraries) {
@@ -111,6 +120,14 @@ public class Controller {
                 }
             });
         }
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < baseModules.size(); i++) {
+            builder.append(baseModules.get(i));
+            if (i < baseModules.size() - 1) {
+                builder.append(Constants.SEMICOLON);
+            }
+        }
+        TdpPluginPropertiesReader.getInstance(path).setProperty("baseModules", builder.toString());
         UpdateTDPLibraryAction.generateLibs(project);
     }
 }

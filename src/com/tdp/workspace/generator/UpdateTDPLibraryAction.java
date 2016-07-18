@@ -27,7 +27,11 @@ import com.tdp.workspace.generator.fileutils.TdpPluginPropertiesReader;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.NavigableSet;
 
 /**
  * Created by Siarhei_Nahel on 6/3/2016.
@@ -91,6 +95,9 @@ public class UpdateTDPLibraryAction extends AnAction {
             });
         }
         List<String> jars = ReadFileUtil.getJars(project.getBasePath());
+        if (jars.isEmpty()) {
+            return;
+        }
         VirtualFile[] classes = getClasses(jars, project);
         VirtualFile[] sources = getSourcesFromRepository(jars, project);
         LibrariesContainer container = LibrariesContainerFactory.createContainer(project);

@@ -5,6 +5,7 @@ import com.tdp.workspace.generator.fileutils.ReadFileUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 
@@ -13,10 +14,10 @@ import java.util.TreeSet;
  */
 public class GeneratorModuleDep {
     private final String repoPath;
-    private final NavigableSet<String> baseModules;
+    private final List<String> baseModules;
     private NavigableSet<String> allModules = new TreeSet<>();
 
-    public GeneratorModuleDep(String repoPath, NavigableSet<String> baseModules) {
+    public GeneratorModuleDep(String repoPath, List<String> baseModules) {
         this.repoPath = repoPath;
         this.baseModules = baseModules;
     }
