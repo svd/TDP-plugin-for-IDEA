@@ -1,6 +1,6 @@
 package com.tdp.workspace.generator;
 
-import com.intellij.openapi.project.impl.ProjectImpl;
+import com.tdp.decorator.DescriptionsCache;
 import com.tdp.workspace.generator.fileutils.ReadFileUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -13,15 +13,10 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.NavigableSet;
-import java.util.Properties;
-import java.util.TreeSet;
 
 /**
  * Created by Siarhei Nahel on 21.05.2016.
@@ -29,14 +24,7 @@ import java.util.TreeSet;
 public class ChooserBaseModules extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
-        Properties descriptions = new Properties();
-        try {
-            File prFile = new File(Constants.PATH_TO_DESCRIPTIONS);
-            FileInputStream ins = new FileInputStream(prFile);
-            descriptions.load(ins);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        DescriptionsCache cache = DescriptionsCache.getInstance();
         Project project = e.getProject();
         String path = project.getBasePath();
         InputModulesValidator validator = new InputModulesValidator(
@@ -50,7 +38,7 @@ public class ChooserBaseModules extends AnAction {
                 message.append("\n \nYou have added these modules before:\n");
                 List<String> list = getBaseModulesList(baseModulesFromProperty);
                 for (String number : list) {
-                    message.append(number).append(" - ").append(descriptions.getProperty(number)).append("\n");
+                    message.append(number).append(" - ").append(cache.getDescription(number)).append("\n");
                 }
                 message.append(" \n");
             }
@@ -72,17 +60,9 @@ public class ChooserBaseModules extends AnAction {
                 });
         if (baseModules != null){
             List<String> modules = getBaseModulesList(baseModules);
-            String newNameProject = descriptions.getProperty(modules.get(0));
-            if (newNameProject != null) {
-                ProjectImpl projectImpl = (ProjectImpl) project;
-                projectImpl.setProjectName(newNameProject);
-            }
-            NavigableSet<String> baseModulesList = new TreeSet<>();
-            baseModulesList.addAll(modules);
-            Controller controller = new Controller(baseModulesList, path);
+            Controller controller = new Controller(modules, path);
             try {
                 controller.generateWorkspace(project);
-                TdpPluginPropertiesReader.getInstance(path).setProperty("baseModules", baseModules);
             } catch (IOException | TransformerException| ParserConfigurationException | SAXException e1) {
                 e1.printStackTrace();
             }

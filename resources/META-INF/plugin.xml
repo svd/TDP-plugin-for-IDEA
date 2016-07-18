@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.tdp</id>
   <name>TDP plugin</name>
-  <version>1.10</version>
+  <version>1.10.2</version>
   <vendor url="http://www.epam.com">Epam</vendor>
 
   <description><![CDATA[
@@ -17,6 +17,15 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      <b>1.10.2</b><br>
+      <ul>
+        <li>Fixed bug with Wizard</li>
+        <li>Fixed bug with LibraryUpdater</li>
+      </ul>
+      <b>1.10.1</b><br>
+      <ul>
+        <li>Fixed "Cyclic dependency" in the decorator module</li>
+      </ul>
       <b>1.10</b><br>
       <ul>
         <li>Run update library automatically after the generate workspace</li>

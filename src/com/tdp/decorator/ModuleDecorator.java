@@ -17,15 +17,8 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.net.URL;
-import java.util.Properties;
 import java.util.List;
-import java.util.Map;
 import java.util.Date;
 
 public class ModuleDecorator implements ProjectViewNodeDecorator {
@@ -33,9 +26,6 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
     static String START_FRAMING = " [";
     static String END_FRAMING = "]";
 
-    private Properties descriptionCache = new Properties();
-    private String tempRepositoryFile = System.getenv("TEMP") + "/Repository.txt";
-    private final static String URL_TO_CVS = "http://10.160.254.238/cvs/";
     private final static long TWO_DAY_DURATION = 172800000;
 
     public ModuleDecorator() {
@@ -46,9 +36,8 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
             AbstractProjectViewPane pane = projectView.getProjectViewPaneById("ProjectPane");
             if (pane != null) {
                 if (pane.getWeight() == 0) { // "0" is a weight of the default pane
+                    projectView.changeView("TDPProjectPane"); // It is need before removing old pane
                     projectView.removeProjectPane(pane);
-                    // Switch view to the new pane
-                    projectView.changeView("TDPProjectPane");
                 }
             }
         }
@@ -56,33 +45,24 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
 
     @Override
     public void decorate(ProjectViewNode node, PresentationData data) {
-
-        if (descriptionCache.size() == 0) {
-            try {
-                init();
-            } catch (IOException | ParserConfigurationException | SAXException e) {
-                e.printStackTrace();
-            }
-        }
+        DescriptionsCache cache = DescriptionsCache.getInstance();
         VirtualFile nodeVirtualFile = node.getVirtualFile();
         if (nodeVirtualFile != null) {
             String fileName = nodeVirtualFile.getName();
-            if (!descriptionCache.containsKey(fileName) && nodeVirtualFile.isDirectory() && fileName.contains("000")) {
+            if (!cache.hasDescriptionForModule(fileName) && nodeVirtualFile.isDirectory() && fileName.contains("000")) {
                 File propFile = new File(Constants.PATH_TO_DESCRIPTIONS);
                 long now = new Date().getTime();
                 long lastMod = propFile.lastModified();
                 if (now - lastMod > TWO_DAY_DURATION){
                     try {
-                        update();
+                        cache.update();
                     } catch (IOException | ParserConfigurationException | SAXException e) {
                         e.printStackTrace();
                     }
                 }
             }
-            addModuleDescription(data, descriptionCache.getProperty(fileName));
+            addModuleDescription(data, cache.getDescription(fileName));
         }
-
-
     }
 
 
@@ -110,45 +90,5 @@ public class ModuleDecorator implements ProjectViewNodeDecorator {
 
     @Override
     public void decorate(PackageDependenciesNode node, ColoredTreeCellRenderer cellRenderer) {
-    }
-
-    private void init() throws IOException, ParserConfigurationException, SAXException {
-        File prFile = new File(Constants.PATH_TO_DESCRIPTIONS);
-        if (!prFile.exists()){
-            prFile.createNewFile();
-            update();
-        } else {
-            FileInputStream ins = new FileInputStream(prFile);
-            descriptionCache.load(ins);
-        }
-    }
-
-    private void update() throws IOException, ParserConfigurationException, SAXException {
-        parseHtml();
-        FileOutputStream fos = null;
-        try{
-            fos = new FileOutputStream(new File(Constants.PATH_TO_DESCRIPTIONS));
-            descriptionCache.store(fos, null);
-            fos.flush();
-        } finally {
-            if(fos != null){
-                fos.close();
-            }
-        }
-    }
-
-    private void parseHtml() throws IOException, ParserConfigurationException, SAXException {
-        URL url = new URL(URL_TO_CVS);
-        OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(tempRepositoryFile), "utf-8");
-        InputStream in = url.openStream();
-        int i;
-        while((i=in.read())!=-1){
-            out.write(i);
-        }
-        in.close();
-        out.flush();
-        out.close();
-        Map<String, String> cache = Parser.descrFromHtml(new File(tempRepositoryFile));
-        descriptionCache.putAll(cache);
     }
 }
