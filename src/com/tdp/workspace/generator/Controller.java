@@ -49,12 +49,7 @@ public class Controller {
 
     public void generateWorkspace(Project project) throws IOException, TransformerException, ParserConfigurationException, SAXException {
         ModuleManager manager = ModuleManagerImpl.getInstance(project);
-        DescriptionsCache cache = DescriptionsCache.getInstance();
-        String newNameProject = cache.getDescription(baseModules.get(0));
-        if (newNameProject != null) {
-            ProjectImpl projectImpl = (ProjectImpl) project;
-            projectImpl.setProjectName(newNameProject);
-        }
+
         LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
         Library[] libraries = libraryTable.getLibraries();
         for (Library library : libraries) {
@@ -120,14 +115,23 @@ public class Controller {
                 }
             });
         }
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < baseModules.size(); i++) {
-            builder.append(baseModules.get(i));
-            if (i < baseModules.size() - 1) {
-                builder.append(Constants.SEMICOLON);
-            }
-        }
-        TdpPluginPropertiesReader.getInstance(path).setProperty("baseModules", builder.toString());
         UpdateTDPLibraryAction.generateLibs(project);
+    }
+
+    public void saveBaseModulesProperty(String baseModulesString) {
+        try {
+            TdpPluginPropertiesReader.getInstance(path).setProperty("baseModules", baseModulesString);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void renameProject(Project project, String nameBaseModule) {
+        DescriptionsCache cache = DescriptionsCache.getInstance();
+        String newNameProject = cache.getDescription(nameBaseModule);
+        if (newNameProject != null) {
+            ProjectImpl projectImpl = (ProjectImpl) project;
+            projectImpl.setProjectName(newNameProject);
+        }
     }
 }

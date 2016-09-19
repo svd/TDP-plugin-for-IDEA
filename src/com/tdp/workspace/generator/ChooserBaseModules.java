@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NavigableSet;
 
 /**
  * Created by Siarhei Nahel on 21.05.2016.
@@ -27,20 +28,24 @@ public class ChooserBaseModules extends AnAction {
         DescriptionsCache cache = DescriptionsCache.getInstance();
         Project project = e.getProject();
         String path = project.getBasePath();
-        InputModulesValidator validator = new InputModulesValidator(
-                ReadFileUtil.getAllTDPModulesFromProjectDir(path));
+        NavigableSet<String> allModules = ReadFileUtil.getAllTDPModulesFromProjectDir(path);
+        InputModulesValidator validator = new InputModulesValidator(allModules);
         String baseModulesFromProperty = null;
-        StringBuilder message = new StringBuilder("Base modules (for example: 00005555;00005556)");
+        StringBuilder message = new StringBuilder("Base modules (for example: 00005555;00005556) or \"all\"");
 
         try {
             baseModulesFromProperty = TdpPluginPropertiesReader.getInstance(path).getBaseModules();
             if (baseModulesFromProperty != null && !baseModulesFromProperty.isEmpty()) {
                 message.append("\n \nYou have added these modules before:\n");
-                List<String> list = getBaseModulesList(baseModulesFromProperty);
-                for (String number : list) {
-                    message.append(number).append(" - ").append(cache.getDescription(number)).append("\n");
+                if (baseModulesFromProperty.equals(Constants.ALL_MODULES_STRING)) {
+                    message.append(Constants.ALL_MODULES_STRING).append("\n");
+                } else {
+                    List<String> list = getBaseModulesList(baseModulesFromProperty);
+                    for (String number : list) {
+                        message.append(number).append(" - ").append(cache.getDescription(number)).append("\n");
+                    }
+                    message.append(" \n");
                 }
-                message.append(" \n");
             }
         } catch (IOException e1) {
             e1.printStackTrace();
@@ -59,13 +64,22 @@ public class ChooserBaseModules extends AnAction {
                     }
                 });
         if (baseModules != null){
-            List<String> modules = getBaseModulesList(baseModules);
-            Controller controller = new Controller(modules, path);
-            try {
-                controller.generateWorkspace(project);
-            } catch (IOException | TransformerException| ParserConfigurationException | SAXException e1) {
-                e1.printStackTrace();
+            List<String> modules = new ArrayList<>();
+            if (baseModules.equals(Constants.ALL_MODULES_STRING)) {
+                modules.addAll(allModules);
+            } else {
+                modules = getBaseModulesList(baseModules);
             }
+             Controller controller = new Controller(modules, path);
+             try {
+                 controller.generateWorkspace(project);
+                 controller.saveBaseModulesProperty(baseModules);
+                 if (!baseModules.equals(Constants.ALL_MODULES_STRING)) {
+                     controller.renameProject(project, modules.get(0));
+                 }
+             } catch (IOException | TransformerException| ParserConfigurationException | SAXException e1) {
+                e1.printStackTrace();
+             }
         }
     }
 
