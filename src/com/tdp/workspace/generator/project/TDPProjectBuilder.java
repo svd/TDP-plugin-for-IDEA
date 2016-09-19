@@ -11,6 +11,7 @@ import com.intellij.openapi.projectRoots.SdkTypeId;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.util.IconLoader;
+import com.tdp.workspace.generator.Constants;
 import com.tdp.workspace.generator.Controller;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,6 +56,17 @@ public class TDPProjectBuilder extends ModuleBuilder {
         Controller controller = new Controller(baseModulesList, project.getBasePath());
         try {
             controller.generateWorkspace(project);
+            StringBuilder builder = new StringBuilder();
+            for(int i=0; i < baseModulesList.size(); i++) {
+                builder.append(baseModulesList.get(i));
+                if (i < baseModulesList.size() - 1) {
+                    builder.append(Constants.SEMICOLON);
+                }
+            }
+            controller.saveBaseModulesProperty(builder.toString());
+            if (!baseModulesList.get(0).equals(Constants.ALL_MODULES_STRING)) {
+                controller.renameProject(project, baseModulesList.get(0));
+            }
         } catch (IOException | TransformerException | ParserConfigurationException | SAXException e) {
             throw new RuntimeException(e);
         }

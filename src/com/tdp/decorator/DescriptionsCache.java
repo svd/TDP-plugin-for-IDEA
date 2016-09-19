@@ -17,7 +17,7 @@ public class DescriptionsCache {
     private static DescriptionsCache instance;
 
     private static Properties descriptionCache = new Properties();
-    private static String tempRepositoryFile = System.getenv("TEMP") + "/Repository.txt";
+    private static String tempRepositoryFile = System.getProperty("java.io.tmpdir") + "/Repository.txt";
     private static final String URL_TO_CVS = "http://10.160.254.238/cvs/";
 
     private DescriptionsCache() {

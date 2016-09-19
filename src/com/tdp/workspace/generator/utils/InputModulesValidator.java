@@ -18,6 +18,9 @@ public class InputModulesValidator {
     }
 
     public boolean validate(@NotNull String modulesString) {
+        if(modulesString.equals(Constants.ALL_MODULES_STRING)) {
+            return true;
+        }
         String[] modules = modulesString.split(Constants.SEMICOLON);
         if (modules.length == 0){
             return false;

@@ -23,19 +23,21 @@ public class GeneratorModuleDep {
     }
 
     private void generateAllDeps(String name) throws FileNotFoundException {
-        String fileName =  repoPath + Constants.SLASH + name + Constants.SLASH
-                + Constants.BUILD_DIR  + Constants.FILE_NAME_DEP;
-        File file = new File(fileName);
-        if (file.exists()) {
-            NavigableSet<String> modules = ReadFileUtil.getModuleNames(file);
-            for (String moduleName : modules) {
-                if (!allModules.contains(moduleName)){
-                    allModules.add(moduleName);
-                    generateAllDeps(moduleName);
+        String pathToBuild = repoPath + Constants.SLASH + name + Constants.SLASH
+                + Constants.BUILD_DIR;
+        String pathDepFile = nameDepFile(pathToBuild);
+        if (!pathDepFile.isEmpty()) {
+            File file = new File(pathDepFile);
+            if (file.exists()) {
+                NavigableSet<String> modules = ReadFileUtil.getModuleNames(file);
+                for (String moduleName : modules) {
+                    if (!allModules.contains(moduleName)) {
+                        allModules.add(moduleName);
+                        generateAllDeps(moduleName);
+                    }
                 }
             }
         }
-
     }
 
     public NavigableSet<String> getModuleNames() throws FileNotFoundException {
@@ -45,5 +47,18 @@ public class GeneratorModuleDep {
         }
         ModulesFilter filter = new ModulesFilter(allModules, repoPath);
         return filter.getModuleFiles();
+    }
+
+    private String nameDepFile(String toPath) {
+        File path = new File(toPath);
+        if (path.isDirectory()) {
+            File[] files = path.listFiles();
+            for (File file : files) {
+                if (file.getName().endsWith(".dep")) {
+                    return file.getAbsolutePath();
+                }
+            }
+        }
+        return new String();
     }
 }
