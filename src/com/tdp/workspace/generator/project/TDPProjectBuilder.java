@@ -53,7 +53,7 @@ public class TDPProjectBuilder extends ModuleBuilder {
     public List<Module> commit(@NotNull Project project, ModifiableModuleModel model, ModulesProvider modulesProvider) {
         List<String> baseModulesList = new ArrayList<>();
         baseModulesList.addAll(Arrays.asList(modules));
-        Controller controller = new Controller(baseModulesList, project.getBasePath());
+        Controller controller = new Controller(baseModulesList, project.getBasePath(), false);
         try {
             controller.generateWorkspace(project);
             StringBuilder builder = new StringBuilder();
@@ -63,7 +63,7 @@ public class TDPProjectBuilder extends ModuleBuilder {
                     builder.append(Constants.SEMICOLON);
                 }
             }
-            controller.saveBaseModulesProperty(builder.toString());
+            controller.saveBaseModulesProperty(builder.toString(), false);
             if (!baseModulesList.get(0).equals(Constants.ALL_MODULES_STRING)) {
                 controller.renameProject(project, baseModulesList.get(0));
             }

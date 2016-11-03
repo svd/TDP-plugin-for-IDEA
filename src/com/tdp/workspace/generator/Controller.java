@@ -1,6 +1,11 @@
 package com.tdp.workspace.generator;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.project.impl.ProjectImpl;
+import com.intellij.openapi.roots.*;
+import com.intellij.openapi.roots.impl.libraries.LibraryEx;
+import com.intellij.openapi.roots.impl.libraries.LibraryImpl;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.tdp.decorator.DescriptionsCache;
 import com.tdp.workspace.generator.fileutils.TdpPluginPropertiesReader;
 import com.tdp.workspace.generator.utils.GeneratorModuleDep;
@@ -11,26 +16,22 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.impl.ModuleManagerImpl;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.CompilerModuleExtension;
-import com.intellij.openapi.roots.ContentEntry;
-import com.intellij.openapi.roots.LibraryOrderEntry;
-import com.intellij.openapi.roots.ModifiableRootModel;
-import com.intellij.openapi.roots.ModuleRootModificationUtil;
-import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.util.Consumer;
+import com.tdp.workspace.generator.utils.ModulesDepUtil;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.NavigableSet;
 
 /**
@@ -41,15 +42,16 @@ public class Controller {
     private String path;
     private List<String> baseModules;
     private NavigableSet<String> allDepend;
+    boolean artifactoryDep;
 
-    public Controller(List<String> baseModules, String path) {
+    public Controller(List<String> baseModules, String path, boolean artifactoryDep) {
         this.baseModules = baseModules;
         this.path = path;
+        this.artifactoryDep = artifactoryDep;
     }
 
     public void generateWorkspace(Project project) throws IOException, TransformerException, ParserConfigurationException, SAXException {
         ModuleManager manager = ModuleManagerImpl.getInstance(project);
-
         LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
         Library[] libraries = libraryTable.getLibraries();
         for (Library library : libraries) {
@@ -66,7 +68,7 @@ public class Controller {
 
         GeneratorModuleDep generatorModuleDep = new GeneratorModuleDep(path, baseModules);
         allDepend = generatorModuleDep.getModuleNames();
-
+        ModulesDepUtil modulesDepUtil = ModulesDepUtil.getInstance(path);
         final List<Module> modules = Arrays.asList(manager.getModules());
         ApplicationManager.getApplication().runWriteAction(new Runnable() {
             public void run() {
@@ -78,13 +80,13 @@ public class Controller {
                 }
             }
         });
-
+        Map<String, String> artifactory = modulesDepUtil.getArtifactoryModules();
         for (String moduleName : allDepend) {
             String pathToModule = MessageFormat.format(Constants.PATTERN_PATH_TO_MODULE_FILE, path, moduleName);
-            ApplicationManager.getApplication().runWriteAction(new Runnable() {
+            doWriteAction(new Runnable() {
+                @Override
                 public void run() {
                     Module module = manager.newModule(pathToModule, JAVA_MODULE);
-                    ModuleRootModificationUtil.setSdkInherited(module);
                     String rootContent = path + Constants.SLASH + moduleName;
                     String output = rootContent + Constants.CLASSES_DIR;
                     ModuleRootModificationUtil.updateModel(module, new Consumer<ModifiableRootModel>() {
@@ -96,31 +98,57 @@ public class Controller {
                             extension.setCompilerOutputPath(VfsUtilCore.pathToUrl(output));
                             extension.setCompilerOutputPathForTests(VfsUtilCore.pathToUrl(output));
                             extension.setExcludeOutput(true);
-                            try {
-                                GeneratorSourceContent.generateRes(path, rootContentEntry, rootContent);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            List<String> existLibrary = new ArrayList<String>();
+                            model.inheritSdk();
+                            boolean hasModuleInArtifactory = artifactory.containsKey(moduleName);
                             OrderEntry[] orderEntries = model.getOrderEntries();
+                            NavigableSet<String> modulesDep = modulesDepUtil.getDepsForModule(moduleName);
                             for (OrderEntry entry : orderEntries) {
-                                try {
-                                    LibraryOrderEntry orderEntry = (LibraryOrderEntry) entry;
-                                    existLibrary.add(orderEntry.getLibraryName());
-                                } catch (ClassCastException e){
+                                if ((entry instanceof ModuleOrderEntry) || (entry instanceof LibraryOrderEntry)) {
+                                    model.removeOrderEntry(entry);
                                 }
+                            }
+                            for (String moduleDep : modulesDep) {
+                                model.addInvalidModuleEntry(moduleDep).setExported(true);
+                            }
+                            String pathToLib;
+                            if (hasModuleInArtifactory && artifactoryDep) {
+                                pathToLib = artifactory.get(moduleName);
+                            } else {
+                                try {
+                                    GeneratorSourceContent.generateRes(path, rootContentEntry, rootContent);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                pathToLib = path + Constants.SLASH + moduleName + Constants.SLASH + Constants.LIB_DIR;
+                            }
+                            File libs = new File(pathToLib);
+                            if(libs.exists()) {
+                                LibraryImpl library = (LibraryImpl) model.getModuleLibraryTable().createLibrary("Library");
+                                LibraryEx.ModifiableModelEx libraryModel = library.getModifiableModel();
+                                VirtualFile file = VfsUtilCore.findRelativeFile(pathToLib, project.getBaseDir());
+                                libraryModel.addJarDirectory(file, true);
+                                LibraryOrderEntry entry = model.findLibraryOrderEntry(library);
+                                assert entry != null : library;
+                                entry.setScope(DependencyScope.COMPILE);
+                                entry.setExported(true);
+                                doWriteAction(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        libraryModel.commit();
+                                    }
+                                });
                             }
                         }
                     });
                 }
             });
         }
-        UpdateTDPLibraryAction.generateLibs(project);
     }
 
-    public void saveBaseModulesProperty(String baseModulesString) {
+    public void saveBaseModulesProperty(String baseModulesString, boolean artifactoryDep) {
         try {
             TdpPluginPropertiesReader.getInstance(path).setProperty("baseModules", baseModulesString);
+            TdpPluginPropertiesReader.getInstance(path).setProperty("artifactoryDep", Boolean.toString(artifactoryDep));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -133,5 +161,15 @@ public class Controller {
             ProjectImpl projectImpl = (ProjectImpl) project;
             projectImpl.setProjectName(newNameProject);
         }
+    }
+
+    private static void doWriteAction(final Runnable action) {
+        final Application application = ApplicationManager.getApplication();
+        application.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                application.runWriteAction(action);
+            }
+        }, application.getDefaultModalityState());
     }
 }

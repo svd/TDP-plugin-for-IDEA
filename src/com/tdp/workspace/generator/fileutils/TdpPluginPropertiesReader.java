@@ -45,7 +45,8 @@ public class TdpPluginPropertiesReader {
                 "testSourceDirs=/src/test/java\n" +
                 "testResourcesDirs=/src/test/resources\n" +
                 "resourcesDirs=\n" +
-                "baseModules=");
+                "baseModules=\n"+
+                "artifactoryDep=");
         fileWriter.close();
     }
 
@@ -95,5 +96,10 @@ public class TdpPluginPropertiesReader {
         properties.store(fileWriter, null);
         fileWriter.flush();
         fileWriter.close();
+    }
+
+    public boolean getArtifactoryDep() {
+        String artifDep = properties.getProperty("artifactoryDep");
+        return artifDep.isEmpty() || artifDep == null ? false : Boolean.parseBoolean(artifDep);
     }
 }

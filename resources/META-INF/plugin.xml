@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.tdp</id>
   <name>TDP plugin</name>
-  <version>2.0</version>
+  <version>2.2b</version>
   <vendor url="http://www.epam.com">Epam</vendor>
 
   <description><![CDATA[
@@ -17,6 +17,15 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      <b>2.2b</b><br>
+      <ul>
+        <li>Added checkbox for using dependencies from artifactory_tmp</li>
+      </ul>
+      <b>2.1</b><br>
+      <ul>
+        <li>Update workspace generator</li>
+        <li>Remove UpdateLibrary</li>
+      </ul>
       <b>2.0</b><br>
       <ul>
         <li>Added "all" key support</li>
@@ -62,9 +71,7 @@
     <group id="TDPplugin.TDPMenu" text="TD_P Project" description="TDP Project menu">
       <add-to-group group-id="MainMenu" anchor="last"  />
       <action id="BuildTpdProject" class="com.tdp.workspace.generator.ChooserBaseModules" text="Generate workspace"/>
-      <action id="TDPUpdateLibrary" class="com.tdp.workspace.generator.UpdateTDPLibraryAction" text="Update libraries"
-              description="Copy jars files into a project library and update project"/>
+      <action id="AnaliseModuleDep" class="com.tdp.workspace.generator.AnaliseModuleDep" text="Get all dep for module"/>
     </group>
   </actions>
-
 </idea-plugin>

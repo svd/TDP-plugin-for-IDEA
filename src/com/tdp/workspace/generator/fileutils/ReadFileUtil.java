@@ -1,7 +1,5 @@
 package com.tdp.workspace.generator.fileutils;
 
-import com.tdp.workspace.generator.Constants;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -16,6 +14,8 @@ import java.util.TreeSet;
 public class ReadFileUtil {
 
     private static List<String> jars = new ArrayList<>();
+    private static final int LENGTH_MODULE_NAME = 8;
+    private static final String START_MODULE_NAME_PATTERN = "00";
 
     public static NavigableSet<String> getAllTDPModulesFromProjectDir(String path){
         File projectDir = new File(path);
@@ -23,7 +23,7 @@ public class ReadFileUtil {
         File[] modules = projectDir.listFiles();
         for (File module : modules){
             String name = module.getName();
-            if (module.isDirectory() && name.contains("000")){
+            if (module.isDirectory() && name.startsWith(START_MODULE_NAME_PATTERN)){
                 allModules.add(name);
             }
         }
@@ -34,9 +34,15 @@ public class ReadFileUtil {
         NavigableSet<String> modules = new TreeSet<String>();
         Scanner scanner = new Scanner(depFile);
         while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            if (line.contains(Constants.HEAD) && !line.contains("#")) {
-                String moduleName = line.replace(Constants.HEAD, "");
+            String line = scanner.nextLine().trim();
+            if (line.startsWith(START_MODULE_NAME_PATTERN)) {
+                String moduleName;
+                if (line.length() > LENGTH_MODULE_NAME) {
+                    moduleName = line.substring(0, LENGTH_MODULE_NAME);
+                } else {
+                    moduleName = line;
+                }
+//                System.out.println(moduleName);
                 modules.add(moduleName.trim());
             }
         }

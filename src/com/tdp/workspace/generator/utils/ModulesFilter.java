@@ -34,15 +34,6 @@ public class ModulesFilter {
         if (!dir.exists()){
             return false;
         }
-        File[] dirs = dir.listFiles();
-        for (File file : dirs){
-            if (file.isDirectory()){
-                String name = file.getName();
-                if (name.equals(Constants.LIB_DIR)) {
-                    return false;
-                }
-            }
-        }
         return true;
     }
 }

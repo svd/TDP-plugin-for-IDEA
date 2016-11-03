@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.NavigableSet;
+import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -16,49 +17,22 @@ public class GeneratorModuleDep {
     private final String repoPath;
     private final List<String> baseModules;
     private NavigableSet<String> allModules = new TreeSet<>();
+    private ModulesDepUtil modulesDepUtil;
 
-    public GeneratorModuleDep(String repoPath, List<String> baseModules) {
+    public GeneratorModuleDep(String repoPath, List<String> baseModules) throws FileNotFoundException {
         this.repoPath = repoPath;
         this.baseModules = baseModules;
+        modulesDepUtil = ModulesDepUtil.getInstance(repoPath);
     }
 
-    private void generateAllDeps(String name) throws FileNotFoundException {
-        String pathToBuild = repoPath + Constants.SLASH + name + Constants.SLASH
-                + Constants.BUILD_DIR;
-        String pathDepFile = nameDepFile(pathToBuild);
-        if (!pathDepFile.isEmpty()) {
-            File file = new File(pathDepFile);
-            if (file.exists()) {
-                NavigableSet<String> modules = ReadFileUtil.getModuleNames(file);
-                for (String moduleName : modules) {
-                    if (!allModules.contains(moduleName)) {
-                        allModules.add(moduleName);
-                        generateAllDeps(moduleName);
-                    }
-                }
-            }
-        }
+    private void generateAllDeps(String name) {
+        allModules.addAll(modulesDepUtil.getAllDepsForModule(name));
     }
 
-    public NavigableSet<String> getModuleNames() throws FileNotFoundException {
+    public NavigableSet<String> getModuleNames() {
         for (String m : baseModules) {
-            allModules.add(m);
             generateAllDeps(m);
         }
-        ModulesFilter filter = new ModulesFilter(allModules, repoPath);
-        return filter.getModuleFiles();
-    }
-
-    private String nameDepFile(String toPath) {
-        File path = new File(toPath);
-        if (path.isDirectory()) {
-            File[] files = path.listFiles();
-            for (File file : files) {
-                if (file.getName().endsWith(".dep")) {
-                    return file.getAbsolutePath();
-                }
-            }
-        }
-        return new String();
+        return allModules;
     }
 }
