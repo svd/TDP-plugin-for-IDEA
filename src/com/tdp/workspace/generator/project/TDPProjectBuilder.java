@@ -33,9 +33,14 @@ public class TDPProjectBuilder extends ModuleBuilder {
 
     /* Contains array of selected modules */
     private String[] modules = new String[0];
+    private boolean artifactoryDependenceFlag;
 
     public void setModules(String[] modules) {
         this.modules = modules;
+    }
+
+    public void setArtifactoryDependenceFlag(boolean flag) {
+        this.artifactoryDependenceFlag = flag;
     }
 
     @Override
@@ -53,7 +58,7 @@ public class TDPProjectBuilder extends ModuleBuilder {
     public List<Module> commit(@NotNull Project project, ModifiableModuleModel model, ModulesProvider modulesProvider) {
         List<String> baseModulesList = new ArrayList<>();
         baseModulesList.addAll(Arrays.asList(modules));
-        Controller controller = new Controller(baseModulesList, project.getBasePath(), false);
+        Controller controller = new Controller(baseModulesList, project.getBasePath(), artifactoryDependenceFlag);
         try {
             controller.generateWorkspace(project);
             StringBuilder builder = new StringBuilder();
