@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.NavigableSet;
 
@@ -27,6 +28,7 @@ import java.util.NavigableSet;
 public class ChooserBaseModules extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
+
         DescriptionsCache cache = DescriptionsCache.getInstance();
         Project project = e.getProject();
         String path = project.getBasePath();
@@ -72,6 +74,7 @@ public class ChooserBaseModules extends AnAction {
                 });
         String baseModules = pair.getFirst();
         artifactoryDep = pair.getSecond();
+        long startTime = new Date().getTime();
         if (baseModules != null) {
             List<String> modules = new ArrayList<>();
             if (baseModules.equals(Constants.ALL_MODULES_STRING)) {
@@ -90,6 +93,8 @@ public class ChooserBaseModules extends AnAction {
                 e1.printStackTrace();
              }
         }
+        long endTime = new Date().getTime();
+        System.out.println((endTime - startTime)/1000);
     }
 
     private List<String> getBaseModulesList(String baseModulesString) {
