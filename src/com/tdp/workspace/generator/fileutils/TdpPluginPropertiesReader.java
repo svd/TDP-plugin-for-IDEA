@@ -100,6 +100,6 @@ public class TdpPluginPropertiesReader {
 
     public boolean getArtifactoryDep() {
         String artifDep = properties.getProperty("artifactoryDep");
-        return artifDep.isEmpty() || artifDep == null ? false : Boolean.parseBoolean(artifDep);
+        return artifDep ==null || artifDep.isEmpty() ? false : Boolean.parseBoolean(artifDep);
     }
 }

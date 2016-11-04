@@ -140,7 +140,7 @@ public class Controller {
                                     }
                                     File libs = new File(pathToLib);
                                     if(libs.exists()) {
-                                        LibraryImpl library = (LibraryImpl) model.getModuleLibraryTable().createLibrary("Library");
+                                        LibraryImpl library = (LibraryImpl) model.getModuleLibraryTable().createLibrary(moduleName);
                                         LibraryEx.ModifiableModelEx libraryModel = library.getModifiableModel();
                                         VirtualFile file = VfsUtilCore.findRelativeFile(pathToLib, project.getBaseDir());
                                         libraryModel.addJarDirectory(file, true);
