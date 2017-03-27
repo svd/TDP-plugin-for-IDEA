@@ -2,9 +2,10 @@ package com.tdp.workspace.generator.utils;
 
 import com.tdp.workspace.generator.Constants;
 import com.tdp.workspace.generator.fileutils.ReadFileUtil;
+import com.tdp.workspace.generator.fileutils.TdpPluginPropertiesReader;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.TreeMap;
@@ -23,15 +24,15 @@ public class ModulesDepUtil {
         this.projectPath = projectPath;
     }
 
-    public static ModulesDepUtil getInstance(String projectPath) throws FileNotFoundException {
+    public static ModulesDepUtil getInstance(String projectPath) throws IOException {
         if (instance == null) {
             instance = new ModulesDepUtil(projectPath);
-            instance.generate();
         }
+        instance.generate();
         return instance;
     }
 
-    private void generate() throws FileNotFoundException {
+    private void generate() throws IOException {
         NavigableSet<String> allModules = ReadFileUtil.getAllTDPModulesFromProjectDir(projectPath);
         for (String module : allModules) {
             String pathToBuild = projectPath + Constants.SLASH + module + Constants.SLASH
@@ -45,14 +46,7 @@ public class ModulesDepUtil {
             NavigableSet<String> modulesDep = ReadFileUtil.getModuleNames(fileDep);
             allModulesWithDeps.put(module, modulesDep);
         }
-        String pathToArtifactory = projectPath + Constants.SLASH + Constants.ARTIFACTORY_TMP;
-        if (new File(pathToArtifactory).exists()) {
-            NavigableSet<String> artifactoryTmp = ReadFileUtil.getAllTDPModulesFromProjectDir(pathToArtifactory);
-            for (String moduleName : artifactoryTmp) {
-                String pathToModuleArtifactory = projectPath + Constants.SLASH + Constants.ARTIFACTORY_TMP + Constants.SLASH + moduleName;
-                artifactoryModules.put(moduleName, pathToModuleArtifactory);
-            }
-        }
+        updateArtifactory();
     }
 
     private String nameDepFile(String toPath) {
@@ -114,6 +108,26 @@ public class ModulesDepUtil {
 
     public Map<String, String> getArtifactoryModules() {
         return artifactoryModules;
+    }
+
+    public void updateArtifactory() {
+        String pathToArtifactoryTmp = null;
+        try {
+            pathToArtifactoryTmp = TdpPluginPropertiesReader.getInstance(projectPath).getArtifactoryTmpDer();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        if (pathToArtifactoryTmp.isEmpty()) {
+            pathToArtifactoryTmp = projectPath + Constants.SLASH + Constants.ARTIFACTORY_TMP;
+        }
+        if (new File(pathToArtifactoryTmp).exists()) {
+            String pathToCopyArtifactory = projectPath + Constants.SLASH + ".idea/" + Constants.ARTIFACTORY_TMP;
+            NavigableSet<String> artifactoryTmp = ReadFileUtil.getAllTDPModulesFromProjectDir(pathToArtifactoryTmp);
+            for (String moduleName : artifactoryTmp) {
+                String pathToModuleArtifactory = pathToCopyArtifactory + Constants.SLASH + moduleName;
+                artifactoryModules.put(moduleName, pathToModuleArtifactory);
+            }
+        }
     }
 
     private NavigableSet<String> getLibs(NavigableSet<String> deps) {

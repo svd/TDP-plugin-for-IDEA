@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.tdp</id>
   <name>TDP plugin</name>
-  <version>2.3.1b</version>
+  <version>2.4.1b</version>
   <vendor url="http://www.epam.com">Epam</vendor>
 
   <description><![CDATA[
@@ -17,6 +17,11 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      <b>2.4b</b><br>
+      <ul>
+        <li>Added update modules</li>
+        <li>Fixed issue from lock artifactory_tmp</li>
+      </ul>
       <b>2.3b</b><br>
       <ul>
         <li>Added progress indicator</li>
@@ -75,7 +80,9 @@
     <group id="TDPplugin.TDPMenu" text="TD_P Project" description="TDP Project menu">
       <add-to-group group-id="MainMenu" anchor="last"  />
       <action id="BuildTpdProject" class="com.tdp.workspace.generator.ChooserBaseModules" text="Generate workspace"/>
-      <action id="AnaliseModuleDep" class="com.tdp.workspace.generator.AnaliseModuleDep" text="Get all dep for module"/>
+      <action class="com.tdp.workspace.generator.UpdateModulesAction" id="UpdateModules" text="Update modules"/>
+      <!--<action id="Updateartifatory" class="com.tdp.workspace.generator.UpdateArtifactory" text="Update artifactory deps"/>-->
+      <action id="AnaliseModuleDep" class="com.tdp.workspace.generator.AnalyzeModuleDep" text="Get all dep for module"/>
     </group>
   </actions>
 </idea-plugin>

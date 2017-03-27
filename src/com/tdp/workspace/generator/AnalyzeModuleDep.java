@@ -21,7 +21,7 @@ import java.util.NavigableSet;
 /**
  * Created by Siarhei_Nahel on 10/26/2016.
  */
-public class AnaliseModuleDep extends AnAction {
+public class AnalyzeModuleDep extends AnAction {
     private static final String PATTERN_TITLE = "Dependencies for module {0} ({1}):\n";
     private static final String PATTER_LINE = "{0} - {1}\n";
     @Override
@@ -32,7 +32,7 @@ public class AnaliseModuleDep extends AnAction {
         ModulesDepUtil modulesDepUtil = null;
         try {
             modulesDepUtil = ModulesDepUtil.getInstance(path);
-        } catch (FileNotFoundException e1) {
+        } catch (IOException e1) {
             e1.printStackTrace();
         }
         NavigableSet<String> allModules = modulesDepUtil.getAllModulesName();

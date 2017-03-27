@@ -1,5 +1,11 @@
 package com.tdp.workspace.generator;
 
+import com.intellij.conversion.CannotConvertException;
+import com.intellij.conversion.RunManagerSettings;
+import com.intellij.conversion.impl.ConversionContextImpl;
+import com.intellij.conversion.impl.RunManagerSettingsImpl;
+import com.intellij.execution.RunManager;
+import com.intellij.execution.impl.RunManagerImpl;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ex.ApplicationManagerEx;
 import com.intellij.openapi.module.ModifiableModuleModel;
@@ -9,7 +15,10 @@ import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.impl.libraries.LibraryEx;
 import com.intellij.openapi.roots.impl.libraries.LibraryImpl;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.FileContentUtil;
+import com.intellij.util.PathUtil;
 import com.tdp.decorator.DescriptionsCache;
 import com.tdp.workspace.generator.fileutils.TdpPluginPropertiesReader;
 import com.tdp.workspace.generator.utils.GeneratorModuleDep;
@@ -25,6 +34,7 @@ import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.util.Consumer;
 import com.tdp.workspace.generator.utils.ModulesDepUtil;
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -48,14 +58,24 @@ public class Controller {
     private List<String> baseModules;
     private NavigableSet<String> allDepend;
     protected boolean artifactoryDep;
+    private String patToArtifactory;
 
     public Controller(List<String> baseModules, String path, boolean artifactoryDep) {
         this.baseModules = baseModules;
         this.path = path;
         this.artifactoryDep = artifactoryDep;
+        try {
+            patToArtifactory = TdpPluginPropertiesReader.getInstance(path).getArtifactoryTmpDer();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        if (patToArtifactory.isEmpty()) {
+            patToArtifactory = path + Constants.SLASH + Constants.ARTIFACTORY_TMP;
+        }
     }
 
-    public void generateWorkspace(Project project) throws IOException, TransformerException, ParserConfigurationException, SAXException {
+    public void generateWorkspace(Project project) throws IOException, TransformerException, ParserConfigurationException, SAXException, CannotConvertException {
+
         ModuleManager manager = ModuleManagerImpl.getInstance(project);
         LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
         ApplicationManagerEx.getApplicationEx().runProcessWithProgressSynchronously(new RemoveLibraries(libraryTable),
@@ -69,7 +89,14 @@ public class Controller {
                 "Removing modules", false, project);
         allDepend.add("dlex_build_templates");
 
-        ApplicationManagerEx.getApplicationEx().runProcessWithProgressSynchronously(new ImportModules(project, manager, modulesDepUtil),
+        ApplicationManagerEx.getApplicationEx().runProcessWithProgressSynchronously(new ImportModules(project, manager, modulesDepUtil, allDepend),
+                "Generating modules", false, project);
+    }
+
+    public void updateModules(Project project, NavigableSet<String> modulesForUpdate) throws IOException {
+        ModuleManager manager = ModuleManager.getInstance(project);
+        ModulesDepUtil modulesDepUtil = ModulesDepUtil.getInstance(path);
+        ApplicationManagerEx.getApplicationEx().runProcessWithProgressSynchronously(new ImportModules(project, manager, modulesDepUtil, modulesForUpdate),
                 "Generating modules", false, project);
     }
 
@@ -151,17 +178,19 @@ public class Controller {
         private final Project project;
         private final ModulesDepUtil modulesDepUtil;
         private final ModuleManager manager;
+        private final NavigableSet<String> modules;
 
-        public ImportModules(Project project, ModuleManager manager, ModulesDepUtil modulesDepUtil) {
+        public ImportModules(Project project, ModuleManager manager, ModulesDepUtil modulesDepUtil, NavigableSet<String> modules) {
             this.manager = manager;
             this.modulesDepUtil = modulesDepUtil;
             this.project = project;
+            this.modules = modules;
         }
 
         @Override
         public void run() {
             Map<String, String> artifactory = modulesDepUtil.getArtifactoryModules();
-            for (String moduleName : allDepend) {
+            for (String moduleName : modules) {
                 ProgressManager.getInstance().getProgressIndicator().setText("Load module: " + moduleName);
                 doWriteAction(new Runnable() {
                     @Override
@@ -196,6 +225,14 @@ public class Controller {
                                 String pathToLib;
                                 if (hasModuleInArtifactory && artifactoryDep) {
                                     pathToLib = artifactory.get(moduleName);
+                                    VirtualFile from = VfsUtilCore.findRelativeFile(patToArtifactory + Constants.SLASH + moduleName,
+                                            project.getBaseDir());
+                                    try {
+                                        VirtualFile to = VfsUtil.createDirectoryIfMissing(pathToLib);
+                                        VfsUtil.copyDirectory(null, from, to, null);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
                                 } else {
                                     try {
                                         GeneratorSourceContent.generateRes(path, rootContentEntry, rootContent);
@@ -209,6 +246,7 @@ public class Controller {
                                     LibraryImpl library = (LibraryImpl) model.getModuleLibraryTable().createLibrary(moduleName);
                                     LibraryEx.ModifiableModelEx libraryModel = library.getModifiableModel();
                                     VirtualFile file = VfsUtilCore.findRelativeFile(pathToLib, project.getBaseDir());
+                                    System.out.println(pathToLib);
                                     libraryModel.addJarDirectory(file, true);
                                     LibraryOrderEntry entry = model.findLibraryOrderEntry(library);
                                     assert entry != null : library;

@@ -1,5 +1,6 @@
 package com.tdp.workspace.generator;
 
+import com.intellij.conversion.CannotConvertException;
 import com.intellij.openapi.util.Pair;
 import com.tdp.decorator.DescriptionsCache;
 import com.tdp.workspace.generator.fileutils.ReadFileUtil;
@@ -28,7 +29,6 @@ import java.util.NavigableSet;
 public class ChooserBaseModules extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
-
         DescriptionsCache cache = DescriptionsCache.getInstance();
         Project project = e.getProject();
         String path = project.getBasePath();
@@ -36,7 +36,16 @@ public class ChooserBaseModules extends AnAction {
         InputModulesValidator validator = new InputModulesValidator(allModules);
         String baseModulesFromProperty = null;
         boolean artifactoryDep = false;
-        File artifactoryTmpDir = new File(path + Constants.SLASH + Constants.ARTIFACTORY_TMP);
+        String pathToArtifactoryTmp = null;
+        try {
+            pathToArtifactoryTmp = TdpPluginPropertiesReader.getInstance(path).getArtifactoryTmpDer();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        if (pathToArtifactoryTmp.isEmpty()) {
+            pathToArtifactoryTmp = path + Constants.SLASH + Constants.ARTIFACTORY_TMP;
+        }
+        File artifactoryTmpDir = new File(pathToArtifactoryTmp);
         boolean hasArtifactoryTmp = artifactoryTmpDir.exists();
         StringBuilder message = new StringBuilder("Base modules (for example: 00005555;00005556) or \"all\"");
         try {
@@ -74,7 +83,7 @@ public class ChooserBaseModules extends AnAction {
                 });
         String baseModules = pair.getFirst();
         artifactoryDep = pair.getSecond();
-        long startTime = new Date().getTime();
+//        long startTime = new Date().getTime();
         if (baseModules != null) {
             List<String> modules = new ArrayList<>();
             if (baseModules.equals(Constants.ALL_MODULES_STRING)) {
@@ -89,12 +98,12 @@ public class ChooserBaseModules extends AnAction {
                  if (!baseModules.equals(Constants.ALL_MODULES_STRING)) {
                      controller.renameProject(project, modules.get(0));
                  }
-             } catch (IOException | TransformerException| ParserConfigurationException | SAXException e1) {
+             } catch (IOException | TransformerException| ParserConfigurationException | SAXException | CannotConvertException e1) {
                 e1.printStackTrace();
              }
         }
-        long endTime = new Date().getTime();
-        System.out.println((endTime - startTime)/1000);
+//        long endTime = new Date().getTime();
+//        System.out.println((endTime - startTime)/1000);
     }
 
     private List<String> getBaseModulesList(String baseModulesString) {

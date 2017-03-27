@@ -1,5 +1,6 @@
 package com.tdp.workspace.generator.project;
 
+import com.intellij.conversion.CannotConvertException;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.openapi.module.ModifiableModuleModel;
 import com.intellij.openapi.module.Module;
@@ -72,7 +73,7 @@ public class TDPProjectBuilder extends ModuleBuilder {
             if (!baseModulesList.get(0).equals(Constants.ALL_MODULES_STRING)) {
                 controller.renameProject(project, baseModulesList.get(0));
             }
-        } catch (IOException | TransformerException | ParserConfigurationException | SAXException e) {
+        } catch (IOException | TransformerException | ParserConfigurationException | SAXException | CannotConvertException e) {
             throw new RuntimeException(e);
         }
         return super.commit(project, model, modulesProvider);

@@ -46,7 +46,8 @@ public class TdpPluginPropertiesReader {
                 "testResourcesDirs=/src/test/resources\n" +
                 "resourcesDirs=\n" +
                 "baseModules=\n"+
-                "artifactoryDep=");
+                "artifactoryDep=\n"+
+                "artifactoryTmpDir=");
         fileWriter.close();
     }
 
@@ -72,6 +73,13 @@ public class TdpPluginPropertiesReader {
 
     public String getBaseModules() {
         return properties.getProperty("baseModules");
+    }
+
+    public String getArtifactoryTmpDer() {
+        if (properties.containsKey("artifactoryTmpDir")) {
+            return properties.getProperty("artifactoryTmpDir");
+        }
+        return new String();
     }
 
     private NavigableSet<String> getValues(String key){
